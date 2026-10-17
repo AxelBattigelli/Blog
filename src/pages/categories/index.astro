@@ -1,0 +1,32 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getPosts, groupByCategory } from "../../lib/posts";
+import { url } from "../../lib/url";
+
+const categories = groupByCategory(await getPosts());
+
+function label(count: number): string {
+  return `${count} post${count === 1 ? "" : "s"}`;
+}
+---
+
+<Base title="Categories" description="Posts grouped by category.">
+  <header class="page-header">
+    <h1>Categories</h1>
+    <p class="lede">Each post names a category in its header.</p>
+  </header>
+  {
+    categories.length === 0 ? (
+      <p class="empty">No categories yet.</p>
+    ) : (
+      <ul class="category-list">
+        {categories.map((category) => (
+          <li>
+            <a href={url(`/categories/${category.slug}/`)}>{category.name}</a>
+            <span>{label(category.posts.length)}</span>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</Base>

@@ -1,0 +1,15 @@
+---
+import Base from "../../layouts/Base.astro";
+import PostList from "../../components/PostList.astro";
+import { getPosts } from "../../lib/posts";
+
+const posts = await getPosts();
+---
+
+<Base title="Posts" description="Every published post.">
+  <header class="page-header">
+    <h1>Posts</h1>
+    <p class="lede">Every published text, from newest to oldest.</p>
+  </header>
+  <PostList posts={posts} />
+</Base>

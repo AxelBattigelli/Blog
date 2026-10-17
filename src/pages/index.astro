@@ -1,0 +1,42 @@
+---
+import Base from "../layouts/Base.astro";
+import PostList from "../components/PostList.astro";
+import { site } from "../config";
+import { getPosts, groupByCategory } from "../lib/posts";
+import { url } from "../lib/url";
+
+const posts = await getPosts();
+const pinned = posts.filter((post) => post.data.pinned);
+const recent = posts.filter((post) => !post.data.pinned).slice(0, 3);
+const categories = groupByCategory(posts);
+---
+
+<Base>
+  <h1 class="visually-hidden">Home</h1>
+  <header class="page-header">
+    <p class="lede">{site.description}</p>
+    {
+      categories.length > 0 && (
+        <ul class="category-row">
+          {categories.map((category) => (
+            <li>
+              <a href={url(`/categories/${category.slug}/`)}>{category.name}</a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </header>
+  {
+    pinned.length > 0 && (
+      <section class="home-section" aria-labelledby="pinned">
+        <h2 id="pinned">Pinned</h2>
+        <PostList posts={pinned} titleLevel="h3" />
+      </section>
+    )
+  }
+  <section class="home-section" aria-labelledby="recents">
+    <h2 id="recents">Recent posts</h2>
+    <PostList posts={recent} titleLevel="h3" />
+  </section>
+</Base>

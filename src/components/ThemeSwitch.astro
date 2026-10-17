@@ -1,0 +1,41 @@
+<fieldset class="theme-switch">
+  <legend class="visually-hidden">Theme</legend>
+  <label>
+    <input type="radio" name="theme" value="light" />
+    <span class="visually-hidden">Light</span>
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="4"></circle>
+      <path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.1 5.1l1.8 1.8M17.1 17.1l1.8 1.8M18.9 5.1l-1.8 1.8M6.9 17.1l-1.8 1.8"></path>
+    </svg>
+  </label>
+  <label>
+    <input type="radio" name="theme" value="dark" />
+    <span class="visually-hidden">Dark</span>
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M15.5 3.5a8.2 8.2 0 1 0 5 12.2A6.6 6.6 0 0 1 15.5 3.5z"></path>
+    </svg>
+  </label>
+  <label>
+    <input type="radio" name="theme" value="system" checked />
+    <span class="visually-hidden">System</span>
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 4A8 8 0 0 0 12 20Z"></path>
+      <circle cx="12" cy="12" r="8"></circle>
+    </svg>
+  </label>
+</fieldset>
+
+<script is:inline>
+  (function () {
+    var root = document.documentElement;
+    var inputs = document.querySelectorAll('input[name="theme"]');
+    var current = root.dataset.theme || "system";
+
+    inputs.forEach(function (input) {
+      input.checked = input.value === current;
+      input.addEventListener("change", function () {
+        if (input.checked && window.__setTheme) window.__setTheme(input.value);
+      });
+    });
+  })();
+</script>

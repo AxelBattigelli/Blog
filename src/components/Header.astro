@@ -1,0 +1,133 @@
+---
+import { site } from "../config";
+import { getPages } from "../lib/posts";
+import { isCurrent, url } from "../lib/url";
+import ThemeSwitch from "./ThemeSwitch.astro";
+
+const pages = await getPages();
+const pathname = Astro.url.pathname;
+
+const links = [
+  { href: "/", label: "Home", prefix: false },
+  { href: "/posts", label: "Posts", prefix: true },
+  { href: "/categories", label: "Categories", prefix: true },
+  ...pages.map((page) => ({
+    href: `/${page.id}/`,
+    label: page.data.navTitle ?? page.data.title,
+    prefix: false,
+  })),
+];
+---
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="wordmark" href={url("/")}>{site.title}</a>
+    <div class="header-tools">
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+        <span class="visually-hidden">Menu</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path class="icon-menu" d="M5 7h14M5 12h14M5 17h14"></path>
+          <path class="icon-close" d="M7 7l10 10M17 7L7 17"></path>
+        </svg>
+      </button>
+      <nav id="site-nav" aria-label="Main">
+        <ul class="nav-list">
+          {
+            links.map((link) => (
+              <li>
+                <a
+                  href={url(link.href)}
+                  aria-current={isCurrent(pathname, link.href, link.prefix) ? "page" : undefined}
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+      <ThemeSwitch />
+    </div>
+  </div>
+</header>
+
+<script is:inline>
+  (function () {
+    var header = document.querySelector(".site-header");
+    if (!header) return;
+    var inner = header.querySelector(".header-inner");
+    var toggle = header.querySelector(".nav-toggle");
+    var limit = 0;
+    var lock = false;
+
+    function visibleWidth(el) {
+      var gap = parseFloat(getComputedStyle(el).columnGap) || 0;
+      var width = 0;
+      var count = 0;
+      for (var i = 0; i < el.children.length; i++) {
+        var child = el.children[i];
+        if (getComputedStyle(child).display === "none") continue;
+        width += child.classList.contains("header-tools") ? visibleWidth(child) : child.scrollWidth;
+        count++;
+      }
+      if (count > 1) width += gap * (count - 1);
+      return width;
+    }
+
+    function measure() {
+      var collapsed = header.classList.contains("is-collapsed");
+      var open = header.classList.contains("is-open");
+      header.classList.remove("is-collapsed", "is-open");
+      limit = visibleWidth(inner);
+      if (collapsed) header.classList.add("is-collapsed");
+      if (open && collapsed) header.classList.add("is-open");
+    }
+
+    function apply() {
+      if (lock) return;
+      lock = true;
+      if (!limit) measure();
+      var tight = inner.clientWidth + 1 < limit;
+      header.classList.toggle("is-collapsed", tight);
+      if (!tight && header.classList.contains("is-open")) {
+        header.classList.remove("is-open");
+        toggle.setAttribute("aria-expanded", "false");
+      }
+      lock = false;
+    }
+
+    function setOpen(open) {
+      header.classList.toggle("is-open", open);
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+
+    toggle.addEventListener("click", function () {
+      if (!header.classList.contains("is-collapsed")) return;
+      setOpen(!header.classList.contains("is-open"));
+    });
+
+    document.addEventListener("click", function (event) {
+      if (!header.classList.contains("is-open") || header.contains(event.target)) return;
+      setOpen(false);
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key !== "Escape" || !header.classList.contains("is-open")) return;
+      setOpen(false);
+      toggle.focus();
+    });
+
+    window.addEventListener("resize", function () {
+      limit = 0;
+      apply();
+    });
+
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () {
+      limit = 0;
+      apply();
+    });
+
+    apply();
+    if (window.ResizeObserver) new ResizeObserver(apply).observe(inner);
+  })();
+</script>

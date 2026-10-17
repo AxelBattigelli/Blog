@@ -1,0 +1,45 @@
+---
+import { render } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import Pin from "../../components/Pin.astro";
+import { formatDate, isoDate } from "../../lib/dates";
+import { getPosts } from "../../lib/posts";
+import { slugify } from "../../lib/slug";
+import { url } from "../../lib/url";
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<Base title={post.data.title} description={post.data.description}>
+  <article>
+    <header class="article-header">
+      <p class="meta">
+        {
+          post.data.pinned && (
+            <>
+              <Pin />
+              <span aria-hidden="true">·</span>
+            </>
+          )
+        }
+        <a href={url(`/categories/${slugify(post.data.category)}/`)}>{post.data.category}</a>
+        <span aria-hidden="true">·</span>
+        <time datetime={isoDate(post.data.date)}>{formatDate(post.data.date)}</time>
+      </p>
+      <h1>{post.data.title}</h1>
+      <p class="lede">{post.data.description}</p>
+    </header>
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+</Base>
